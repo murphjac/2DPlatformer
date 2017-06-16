@@ -13,6 +13,7 @@ public class Player : MonoBehaviour {
     public float dashFrameTime = 0.05f;
 
     [Header("Jumping")]
+    public int numJumps = 2;
     public float maxJumpHeight = 4;
     public float minJumpHeight = 1;
     public float timeToJumpApex = 0.4f;
@@ -25,7 +26,7 @@ public class Player : MonoBehaviour {
     public float wallSlideSpeedMax = 3;
     public float wallStickTime = 0.25f;
 
-
+    private int numJumpsRemaining;
     private float timeToWallUnstick;
     private float accelerationTimeAirborne = 0.2f;
     private float accelerationTimeGrounded = 0.1f;
@@ -71,6 +72,8 @@ public class Player : MonoBehaviour {
 
     public void OnJumpInputDown()
     {
+        if (PlayerOnGround() || wallSliding) { numJumpsRemaining = numJumps; }
+
         if (wallSliding)
         {
             // Wall jump velocity is dependent upon input direction relative to the wall.
@@ -82,7 +85,7 @@ public class Player : MonoBehaviour {
             velocity.x *= -wallDirX;
         }
 
-        if (PlayerOnGround())
+        if (PlayerOnGround() || numJumpsRemaining > 0)
         {
             if (controller.collisions.readyToFallThroughPlatform)
             {
@@ -92,6 +95,8 @@ public class Player : MonoBehaviour {
             }
             else
             {
+                numJumpsRemaining--;
+
                 if (controller.collisions.slidingDownMaxSlope)
                 {
                     if(directionalInput.x != -Mathf.Sign(controller.collisions.slopeNormal.x))
