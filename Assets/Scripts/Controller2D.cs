@@ -5,11 +5,10 @@ using UnityEngine;
 public class Controller2D : RaycastController {
 
     public float maxSlopeAngle = 80;
+    public CollisionInfo collisions;
 
     [HideInInspector]
     public Vector2 playerInput;
-
-    public CollisionInfo collisions;
 
     public override void Start()
     {
@@ -17,6 +16,7 @@ public class Controller2D : RaycastController {
         collisions.faceDir = 1;
     }
 
+    // Overload for Movement when no input is provided.
     public void Move(Vector2 moveAmount, bool standingOnPlatform = false)
     {
         Move(moveAmount, Vector2.zero, standingOnPlatform);
@@ -29,7 +29,6 @@ public class Controller2D : RaycastController {
         collisions.moveAmountOld = moveAmount;
         playerInput = input;
 
-
         if (moveAmount.y < 0) { DescendSlope(ref moveAmount); }
         if(moveAmount.x != 0) { collisions.faceDir = (int)Mathf.Sign(moveAmount.x); }
 
@@ -38,10 +37,7 @@ public class Controller2D : RaycastController {
 
         transform.Translate(moveAmount);
 
-        if (standingOnPlatform)
-        {
-            collisions.below = true;
-        }
+        if (standingOnPlatform){ collisions.below = true; }
     }
 
     void HorizontalCollisions(ref Vector2 moveAmount)
@@ -106,6 +102,7 @@ public class Controller2D : RaycastController {
         float directionY = Mathf.Sign(moveAmount.y);
         float rayLength = Mathf.Abs(moveAmount.y) + skinWidth;
 
+        // Check for collisions with vertical raycasts.
         for (int i = 0; i < verticalRayCount; i++)
         {
             Vector2 rayOrigin = (directionY == -1) ? raycastOrigins.botLeft : raycastOrigins.topLeft;
@@ -116,33 +113,30 @@ public class Controller2D : RaycastController {
 
             if (hit)
             {
-                // Allow jumping through appropriately tagged platforms.
+                // Allow jumping/falling through appropriately tagged platforms.
                 if(hit.collider.tag == "ThroughPlatform")
                 {
-                    if(directionY == 1 || hit.distance == 0) { continue; }
-                    if (collisions.fallingThroughPlatform) { continue; }
-                    // TODO: Require Jump Button press to fall through.
-                    if(playerInput.y == -1) {
-                        collisions.fallingThroughPlatform = true;
-                        Invoke("ResetFallingThroughPlatform", 0.5f);
-                        continue;
-                    }
+                    // Any of these conditions determine a state where fall-through platforms should ignore collision.
+                    if (directionY == 1 || hit.distance == 0 || collisions.fallingThroughPlatform) { continue; }
+                    
+                    // If holding 'down' on a fall-through platform, the next jump is staged to fall through instead.
+                    collisions.readyToFallThroughPlatform = (playerInput.y == -1);
                 }
 
-                moveAmount.y = (hit.distance - skinWidth) * directionY;
                 rayLength = hit.distance;
+                moveAmount.y = (rayLength - skinWidth) * directionY;
 
                 if (collisions.climbingSlope)
                 {
                     moveAmount.x = moveAmount.y / Mathf.Tan(collisions.slopeAngle * Mathf.Deg2Rad) * Mathf.Sign(moveAmount.x);
                 }
 
-                collisions.below = directionY == -1;
-                collisions.above = directionY == 1;
+                collisions.below = (directionY == -1);
+                collisions.above = (directionY ==  1);
             }
         }
 
-        // Handle multiple slope transitioning.
+        // Handle transitioning between multiple slopes.
         if (collisions.climbingSlope)
         {
             float directionX = Mathf.Sign(moveAmount.x);
@@ -248,6 +242,7 @@ public class Controller2D : RaycastController {
         public bool climbingSlope, descendingSlope;
         public bool slidingDownMaxSlope;
         public bool fallingThroughPlatform;
+        public bool readyToFallThroughPlatform;
 
         public float slopeAngle, slopeAngleOld;
 
