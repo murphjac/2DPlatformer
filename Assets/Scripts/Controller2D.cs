@@ -58,6 +58,12 @@ public class Controller2D : RaycastController {
 
             if (hit && hit.distance != 0)
             {
+                if (hit.collider.tag == "Breakable")
+                {
+                    Destroy(hit.transform.gameObject);
+                    continue;
+                }
+
                 float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
 
                 // Hit a climbable slope.
