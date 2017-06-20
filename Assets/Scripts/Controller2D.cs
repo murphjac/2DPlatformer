@@ -59,6 +59,8 @@ public class Controller2D : RaycastController {
             if (hit && hit.distance != 0)
             {
                 float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
+
+                // Hit a climbable slope.
                 if (i == 0 && slopeAngle <= maxSlopeAngle)
                 {
                     // Descending a slope while about to ascend another.
@@ -79,18 +81,18 @@ public class Controller2D : RaycastController {
                     moveAmount.x += distanceToSlopeStart * directionX;
                 }
 
+                // Not currently climbing a slope, or the slope angle is too steep to climb.
                 if(!collisions.climbingSlope || slopeAngle > maxSlopeAngle)
                 {
                     moveAmount.x = (hit.distance - skinWidth) * directionX;
-                    rayLength = hit.distance;
 
                     if (collisions.climbingSlope)
                     {
                         moveAmount.y = Mathf.Tan(collisions.slopeAngle * Mathf.Deg2Rad * Mathf.Abs(moveAmount.x));
                     }
 
-                    collisions.left = directionX == LEFT;
-                    collisions.right = directionX == RIGHT;
+                    collisions.left = (directionX == LEFT);
+                    collisions.right = (directionX == RIGHT);
                 }
             }
         }
