@@ -2,44 +2,28 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent (typeof(Controller2D))]
+[RequireComponent (typeof(Controller2D), typeof(MeshRenderer))]
 public class Player : MonoBehaviour {
 
-    [Header("Movement")]
-    public float moveSpeed = 6;
+    [Header("Archetype Properties")]
+    public MovementProperties momentumProperties;
+    public MovementProperties inertiaProperties;
 
-    public float dashTime = 0.2f;
-    public float dashSpeed = 3;
-    public float dashFrameTime = 0.05f;
-
-    [Header("Jumping")]
-    public int numJumps = 2;
-    public float maxJumpHeight = 4;
-    public float minJumpHeight = 1;
-    public float timeToJumpApex = 0.4f;
-
-    public Vector2 wallJumpClimb;
-    public Vector2 wallJumpOff;
-    public Vector2 wallLeap;
-
-    [Header("Wall Sliding")]
-    public float wallSlideSpeedMax = 3;
-    public float wallStickTime = 0.25f;
-
-    private int numJumpsRemaining;
+    private MovementProperties currentProperties;
     private float timeToWallUnstick;
-    private float accelerationTimeAirborne = 0.2f;
-    private float accelerationTimeGrounded = 0.1f;
     private float gravity;
     private float maxJumpVelocity;
     private float minJumpVelocity;
     private Vector3 velocity;
     private Controller2D controller;
+    private MeshRenderer meshRenderer;
     private float velocityXSmoothing;
     private Vector2 directionalInput;
-    private bool wallSliding;
     private int wallDirX;
+    private int numJumpsRemaining;
+    private bool wallSliding;
     private bool dashing;
+    private bool isInertia = false;
 
     public bool PlayerOnGround() { return controller.collisions.below; }
     public void SetDirectionalInput(Vector2 input) { directionalInput = input; }
@@ -47,10 +31,10 @@ public class Player : MonoBehaviour {
     void Start()
     {
         controller = GetComponent<Controller2D>();
+        meshRenderer = GetComponent<MeshRenderer>();
 
-        gravity = -(2 * maxJumpHeight) / Mathf.Pow(timeToJumpApex, 2);
-        maxJumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
-        minJumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(gravity) * minJumpHeight);
+        if (isInertia) { UpdatePlayerProperties(inertiaProperties); }
+        else { UpdatePlayerProperties(momentumProperties); }
     }
 
     void Update()
@@ -70,16 +54,41 @@ public class Player : MonoBehaviour {
         }
     }
 
+    void UpdatePlayerProperties(MovementProperties mp)
+    {
+        currentProperties = mp;
+
+        gravity = -(2 * currentProperties.maxJumpHeight) / Mathf.Pow(currentProperties.timeToJumpApex, 2);
+        maxJumpVelocity = Mathf.Abs(gravity) * currentProperties.timeToJumpApex;
+        minJumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(gravity) * currentProperties.minJumpHeight);
+    }
+
+    public void Transform()
+    {
+        if (isInertia)
+        {
+            isInertia = false;
+            meshRenderer.sharedMaterial = Resources.Load("Materials/Player_Momentum") as Material;
+            UpdatePlayerProperties(momentumProperties);
+        }
+        else
+        {
+            isInertia = true;
+            meshRenderer.sharedMaterial = Resources.Load("Materials/Player_Inertia") as Material;
+            UpdatePlayerProperties(inertiaProperties);
+        }
+    }
+
     public void OnJumpInputDown()
     {
-        if (PlayerOnGround() || wallSliding) { numJumpsRemaining = numJumps; }
+        if (PlayerOnGround() || wallSliding) { numJumpsRemaining = currentProperties.numJumps; }
 
         if (wallSliding)
         {
             // Wall jump velocity is dependent upon input direction relative to the wall.
-            if (wallDirX == directionalInput.x){ velocity = wallJumpClimb; }
-            else if (directionalInput.x == 0){ velocity = wallJumpOff; }
-            else{ velocity = wallLeap; }
+            if (wallDirX == directionalInput.x){ velocity = currentProperties.wallJumpClimb; }
+            else if (directionalInput.x == 0){ velocity = currentProperties.wallJumpOff; }
+            else{ velocity = currentProperties.wallLeap; }
 
             // Ensure the jump is horizontally away from the wall.
             velocity.x *= -wallDirX;
@@ -136,11 +145,11 @@ public class Player : MonoBehaviour {
             DashCancel();
 
             // Start up a new dash.
-            Invoke("Dash", dashFrameTime);
+            Invoke("Dash", currentProperties.dashFrameTime);
         }
 
         // Plan on ending this dash.
-        Invoke("DashCancel", dashTime);
+        Invoke("DashCancel", currentProperties.dashTime);
     }
 
     // Begin a new dash.
@@ -149,7 +158,7 @@ public class Player : MonoBehaviour {
         if (!dashing)
         {
             dashing = true;
-            moveSpeed *= dashSpeed;
+            currentProperties.moveSpeed *= currentProperties.dashSpeed;
         }
     }
 
@@ -159,7 +168,7 @@ public class Player : MonoBehaviour {
         if (dashing)
         {
             dashing = false;
-            moveSpeed /= dashSpeed;
+            currentProperties.moveSpeed /= currentProperties.dashSpeed;
         }
     }
 
@@ -172,7 +181,7 @@ public class Player : MonoBehaviour {
         {
             wallSliding = true;
 
-            if (velocity.y < -wallSlideSpeedMax) { velocity.y = -wallSlideSpeedMax; }
+            if (velocity.y < -currentProperties.wallSlideSpeedMax) { velocity.y = -currentProperties.wallSlideSpeedMax; }
 
             if (timeToWallUnstick > 0)
             {
@@ -180,19 +189,19 @@ public class Player : MonoBehaviour {
                 velocityXSmoothing = 0;
 
                 if (directionalInput.x != wallDirX && directionalInput.x != 0) { timeToWallUnstick -= Time.deltaTime; }
-                else { timeToWallUnstick = wallStickTime; }
+                else { timeToWallUnstick = currentProperties.wallStickTime; }
             }
             else
             {
-                timeToWallUnstick = wallStickTime;
+                timeToWallUnstick = currentProperties.wallStickTime;
             }
         }
     }
 
     void CalculateVelocity()
     {
-        float targetVelocityX = directionalInput.x * moveSpeed;
-        float accelerationTime = PlayerOnGround() ? accelerationTimeGrounded : accelerationTimeAirborne;
+        float targetVelocityX = directionalInput.x * currentProperties.moveSpeed;
+        float accelerationTime = PlayerOnGround() ? currentProperties.gndAccelTime : currentProperties.airAccelTime;
 
         velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, accelerationTime);
         velocity.y += gravity * Time.deltaTime;
@@ -203,5 +212,32 @@ public class Player : MonoBehaviour {
     {
         Gizmos.color = dashing ? new Color(0, 1, 0, 0.7f) : new Color(0, 0, 1, 0.7f);
         Gizmos.DrawCube(transform.position, new Vector3(0.3f, 0.3f, 0.3f));
+    }
+
+    [System.Serializable]
+    public struct MovementProperties
+    {
+        [Header("Movement")]
+        public float moveSpeed;
+        public float airAccelTime;
+        public float gndAccelTime;
+
+        public float dashTime;
+        public float dashSpeed;
+        public float dashFrameTime;
+
+        [Header("Jumping")]
+        public int numJumps;
+        public float maxJumpHeight;
+        public float minJumpHeight;
+        public float timeToJumpApex;
+
+        public Vector2 wallJumpClimb;
+        public Vector2 wallJumpOff;
+        public Vector2 wallLeap;
+
+        [Header("Wall Sliding")]
+        public float wallSlideSpeedMax;
+        public float wallStickTime;
     }
 }

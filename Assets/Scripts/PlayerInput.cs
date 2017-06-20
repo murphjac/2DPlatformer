@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(Player))]
 public class PlayerInput : MonoBehaviour {
 
-    public KeyCode Jump, Dash;
+    public KeyCode Jump, Dash, Transform;
 
     private Player player;
 
@@ -13,7 +13,6 @@ public class PlayerInput : MonoBehaviour {
         player = GetComponent<Player>();
     }
 
-    // Update is called once per frame
     void Update () {
         Vector2 directionalInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         player.SetDirectionalInput(directionalInput);
@@ -21,6 +20,7 @@ public class PlayerInput : MonoBehaviour {
         if (Input.GetKeyDown(Jump)) { player.OnJumpInputDown(); }
         if (Input.GetKeyUp(Jump)) { player.OnJumpInputUp(); }
         if (Input.GetKeyDown(Dash)) { player.OnDashInputDown(); }
+        if (Input.GetKeyDown(Transform)) { player.Transform(); }
     }
 
 }
