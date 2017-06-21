@@ -10,7 +10,7 @@ public class Player : MonoBehaviour {
     public MovementProperties inertiaProperties;
 
     private MovementProperties currentProperties;
-    private float dashSpeedMultiplier = 4.0f;
+    private float dashSpeedMultiplier = 3.0f;
     private float timeToWallUnstick;
     private float gravity;
     private float maxJumpVelocity;
@@ -24,6 +24,7 @@ public class Player : MonoBehaviour {
     private int numJumpsRemaining;
     private bool wallSliding;
     private bool dashing;
+    private bool dashStart = false;
     private bool isInertia = false;
 
     public bool PlayerOnGround() { return controller.collisions.below; }
@@ -162,14 +163,9 @@ public class Player : MonoBehaviour {
     {
         if (!dashing)
         {
+            dashStart = true;
             dashing = true;
             currentProperties.moveSpeed *= currentProperties.dashSpeed;
-            float minDashSpeed = currentProperties.dashSpeed * dashSpeedMultiplier;
-            if(Mathf.Abs(velocity.x) < minDashSpeed)
-            {
-                velocity.x = controller.collisions.faceDir * currentProperties.dashSpeed * dashSpeedMultiplier;
-            }
-            velocity.y = 0;
         }
     }
 
@@ -211,11 +207,24 @@ public class Player : MonoBehaviour {
 
     void CalculateVelocity()
     {
-        float targetVelocityX = directionalInput.x * currentProperties.moveSpeed;
-        float accelerationTime = PlayerOnGround() ? currentProperties.gndAccelTime : currentProperties.airAccelTime;
-
-        velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, accelerationTime);
         if (!dashing) { velocity.y += gravity * Time.deltaTime; }
+
+        if (dashStart)
+        {
+            dashStart = false;
+            velocity.y = 0;
+
+            float minDashSpeed = directionalInput.x * currentProperties.dashSpeed * dashSpeedMultiplier;
+            if (Mathf.Abs(velocity.x) < Mathf.Abs(minDashSpeed) || Mathf.Sign(velocity.x) != Mathf.Sign(directionalInput.x))
+            {
+                velocity.x = minDashSpeed;
+                return;
+            }
+        }
+
+        float accelerationTime = PlayerOnGround() ? currentProperties.gndAccelTime : currentProperties.airAccelTime;
+        float targetVelocityX = directionalInput.x * currentProperties.moveSpeed;
+        velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, accelerationTime);
     }
 
     // Debug stuff
