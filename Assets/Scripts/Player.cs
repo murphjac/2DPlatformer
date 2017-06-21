@@ -52,6 +52,9 @@ public class Player : MonoBehaviour {
             }
             else { velocity.y = 0; }
         }
+
+        // Reset the number of jumps remaining upon gaining traction on a surface.
+        if (PlayerOnGround() || wallSliding) { numJumpsRemaining = currentProperties.numJumps; }
     }
 
     void UpdatePlayerProperties(MovementProperties mp)
@@ -81,7 +84,6 @@ public class Player : MonoBehaviour {
 
     public void OnJumpInputDown()
     {
-        if (PlayerOnGround() || wallSliding) { numJumpsRemaining = currentProperties.numJumps; }
 
         if (wallSliding)
         {
