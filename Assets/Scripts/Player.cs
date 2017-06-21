@@ -159,6 +159,7 @@ public class Player : MonoBehaviour {
         {
             dashing = true;
             currentProperties.moveSpeed *= currentProperties.dashSpeed;
+            velocity.y = 0;
         }
     }
 
@@ -204,7 +205,7 @@ public class Player : MonoBehaviour {
         float accelerationTime = PlayerOnGround() ? currentProperties.gndAccelTime : currentProperties.airAccelTime;
 
         velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, accelerationTime);
-        velocity.y += gravity * Time.deltaTime;
+        if (!dashing) { velocity.y += gravity * Time.deltaTime; }
     }
 
     // Debug stuff
