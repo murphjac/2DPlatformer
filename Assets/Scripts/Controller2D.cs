@@ -45,6 +45,7 @@ public class Controller2D : RaycastController {
     {
         float directionX = collisions.faceDir;
         float rayLength = Mathf.Abs(moveAmount.x) + skinWidth;
+        int breakableHitCount = 0;
 
         if(Mathf.Abs(moveAmount.x) < skinWidth) { rayLength = 2 * skinWidth; }
 
@@ -58,9 +59,11 @@ public class Controller2D : RaycastController {
 
             if (hit && hit.distance != 0)
             {
+                // Hit a breakable object.
                 if (hit.collider.tag == "Breakable")
                 {
-                    Destroy(hit.transform.gameObject);
+                    // Destroy a breakable object only if the player is only colliding with breakable objects.
+                    if(++breakableHitCount == horizontalRayCount) { Destroy(hit.collider.gameObject); }
                     continue;
                 }
 
