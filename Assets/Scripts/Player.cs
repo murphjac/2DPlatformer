@@ -10,6 +10,7 @@ public class Player : MonoBehaviour {
     public MovementProperties inertiaProperties;
 
     private MovementProperties currentProperties;
+    private float dashSpeedMultiplier = 4.0f;
     private float timeToWallUnstick;
     private float gravity;
     private float maxJumpVelocity;
@@ -84,6 +85,8 @@ public class Player : MonoBehaviour {
 
     public void OnJumpInputDown()
     {
+        // Cancel any dashes upon jumping during a dash.
+        if (dashing) { DashCancel(); }
 
         if (wallSliding)
         {
@@ -161,6 +164,11 @@ public class Player : MonoBehaviour {
         {
             dashing = true;
             currentProperties.moveSpeed *= currentProperties.dashSpeed;
+            float minDashSpeed = currentProperties.dashSpeed * dashSpeedMultiplier;
+            if(Mathf.Abs(velocity.x) < minDashSpeed)
+            {
+                velocity.x = controller.collisions.faceDir * currentProperties.dashSpeed * dashSpeedMultiplier;
+            }
             velocity.y = 0;
         }
     }
