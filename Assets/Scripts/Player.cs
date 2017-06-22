@@ -4,10 +4,13 @@ using UnityEngine;
 
 [RequireComponent (typeof(Controller2D), typeof(MeshRenderer))]
 public class Player : MonoBehaviour {
+    public const int EARTH = 0, WIND = 1, FIRE = 2, WATER = 3;
 
     [Header("Archetype Properties")]
-    public MovementProperties momentumProperties;
-    public MovementProperties inertiaProperties;
+    public MovementProperties earthProperties;
+    public MovementProperties windProperties;
+    public MovementProperties fireProperties;
+    public MovementProperties waterProperties;
 
     private MovementProperties currentProperties;
     private float timeToWallUnstick;
@@ -22,10 +25,10 @@ public class Player : MonoBehaviour {
     private int wallDirX;
     private int numJumpsTaken;
     private int numAirDashesTaken;
+    private int currentElement = EARTH;
     private bool wallSliding;
     private bool dashing;
     private bool dashStart = false;
-    private bool isInertia = false;
 
     public bool PlayerOnGround() { return controller.collisions.below; }
     public void SetDirectionalInput(Vector2 input) { directionalInput = input; }
@@ -35,8 +38,7 @@ public class Player : MonoBehaviour {
         controller = GetComponent<Controller2D>();
         meshRenderer = GetComponent<MeshRenderer>();
 
-        if (isInertia) { UpdatePlayerProperties(inertiaProperties); }
-        else { UpdatePlayerProperties(momentumProperties); }
+        Transform(currentElement);
     }
 
     void Update()
@@ -74,19 +76,31 @@ public class Player : MonoBehaviour {
         currentProperties.moveSpeed = dashing ? currentProperties.dashSpeed : currentProperties.runSpeed;
     }
 
-    public void Transform()
+    public void Transform(int element)
     {
-        if (isInertia)
+        currentElement = element;
+
+        switch (element)
         {
-            isInertia = false;
-            meshRenderer.sharedMaterial = Resources.Load("Materials/Player_Momentum") as Material;
-            UpdatePlayerProperties(momentumProperties);
-        }
-        else
-        {
-            isInertia = true;
-            meshRenderer.sharedMaterial = Resources.Load("Materials/Player_Inertia") as Material;
-            UpdatePlayerProperties(inertiaProperties);
+            case EARTH:
+                meshRenderer.sharedMaterial = Resources.Load("Materials/Player_Earth") as Material;
+                UpdatePlayerProperties(earthProperties);
+                break;
+            case WIND:
+                meshRenderer.sharedMaterial = Resources.Load("Materials/Player_Wind") as Material;
+                UpdatePlayerProperties(windProperties);
+                break;
+            case FIRE:
+                meshRenderer.sharedMaterial = Resources.Load("Materials/Player_Fire") as Material;
+                UpdatePlayerProperties(fireProperties);
+                break;
+            case WATER:
+                meshRenderer.sharedMaterial = Resources.Load("Materials/Player_Water") as Material;
+                UpdatePlayerProperties(waterProperties);
+                break;
+            default:
+                print("Error: undefined Player Properties.");
+                break;
         }
     }
 

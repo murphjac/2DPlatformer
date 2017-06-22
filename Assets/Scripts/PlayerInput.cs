@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(Player))]
 public class PlayerInput : MonoBehaviour {
 
-    public KeyCode Jump, Dash, Transform;
+    public KeyCode Jump, Dash, TransformEarth, TransformWind, TransformFire, TransformWater;
 
     private Player player;
 
@@ -20,7 +20,10 @@ public class PlayerInput : MonoBehaviour {
         if (Input.GetKeyDown(Jump)) { player.OnJumpInputDown(); }
         if (Input.GetKeyUp(Jump)) { player.OnJumpInputUp(); }
         if (Input.GetKeyDown(Dash)) { player.OnDashInputDown(); }
-        if (Input.GetKeyDown(Transform)) { player.Transform(); }
+        if (Input.GetKeyDown(TransformEarth)) { player.Transform(Player.EARTH); }
+        if (Input.GetKeyDown(TransformWind)) { player.Transform(Player.WIND); }
+        if (Input.GetKeyDown(TransformFire)) { player.Transform(Player.FIRE); }
+        if (Input.GetKeyDown(TransformWater)) { player.Transform(Player.WATER); }
     }
 
 }
