@@ -142,6 +142,9 @@ public class Player : MonoBehaviour {
 
     public void OnDashInputDown()
     {
+        // Can't perform a non-directional dash.
+        if(directionalInput.x == 0) { return; }
+
         if( (currentProperties.canDash && PlayerOnGround()) || (!PlayerOnGround() && numAirDashesTaken < currentProperties.numAirDashes) )
         {
             if (!dashing)
