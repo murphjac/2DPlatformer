@@ -42,7 +42,7 @@ public class Player : MonoBehaviour {
     void Update()
     {
         CalculateVelocity();
-        HandleWallSliding();
+        if (currentProperties.canWallslide) { HandleWallSliding(); }
 
         controller.Move(velocity * Time.deltaTime, directionalInput);
 
@@ -257,6 +257,7 @@ public class Player : MonoBehaviour {
         public Vector2 wallLeap;
 
         [Header("Wall Sliding")]
+        public bool canWallslide;
         public float wallSlideSpeedMax;
         public float wallStickTime;
     }
