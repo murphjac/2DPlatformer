@@ -20,8 +20,8 @@ public class Player : MonoBehaviour {
     private float velocityXSmoothing;
     private Vector2 directionalInput;
     private int wallDirX;
-    private int numJumpsRemaining;
-    private int numAirDashesRemaining;
+    private int numJumpsTaken;
+    private int numAirDashesTaken;
     private bool wallSliding;
     private bool dashing;
     private bool dashStart = false;
@@ -58,8 +58,8 @@ public class Player : MonoBehaviour {
         // Reset the number of jumps and airdashes remaining upon gaining traction on a surface.
         if (PlayerOnGround() || wallSliding)
         {
-            numJumpsRemaining = currentProperties.numJumps;
-            numAirDashesRemaining = currentProperties.numAirDashes;
+            numJumpsTaken = 0;
+            numAirDashesTaken = 0;
         }
     }
 
@@ -106,7 +106,7 @@ public class Player : MonoBehaviour {
             velocity.x *= -wallDirX;
         }
 
-        if (PlayerOnGround() || numJumpsRemaining > 0)
+        if (PlayerOnGround() || numJumpsTaken < currentProperties.numJumps)
         {
             if (controller.collisions.readyToFallThroughPlatform)
             {
@@ -116,7 +116,7 @@ public class Player : MonoBehaviour {
             }
             else
             {
-                numJumpsRemaining--;
+                numJumpsTaken++;
 
                 if (controller.collisions.slidingDownMaxSlope)
                 {
@@ -142,7 +142,7 @@ public class Player : MonoBehaviour {
 
     public void OnDashInputDown()
     {
-        if( (currentProperties.canDash && PlayerOnGround()) || (!PlayerOnGround() && numAirDashesRemaining > 0) )
+        if( (currentProperties.canDash && PlayerOnGround()) || (!PlayerOnGround() && numAirDashesTaken < currentProperties.numAirDashes) )
         {
             if (!dashing)
             {
@@ -176,8 +176,8 @@ public class Player : MonoBehaviour {
             dashing = true;
             currentProperties.moveSpeed = currentProperties.dashSpeed;
 
-            // Subtract an airdash if used.
-            if (!PlayerOnGround()) { numAirDashesRemaining--; }
+            // Take an airdash if not on the ground.
+            if (!PlayerOnGround()) { numAirDashesTaken++; }
         }
     }
 
