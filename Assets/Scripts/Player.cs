@@ -143,9 +143,16 @@ public class Player : MonoBehaviour {
     public void OnDashInputDown()
     {
         // Can't perform a non-directional dash.
-        if(directionalInput.x == 0) { return; }
+        if(directionalInput.x == 0)
+        {
+            if(directionalInput.y == 0 || !currentProperties.canVerticalDash) { return; }
+        }
 
-        if( (currentProperties.canDash && PlayerOnGround()) || (!PlayerOnGround() && numAirDashesTaken < currentProperties.numAirDashes) )
+        // Don't dash if the character is currently unable.
+        if (!currentProperties.canDash) { return; }
+
+        // Only dash on the ground, or if the character has airdashes available.
+        if(PlayerOnGround() || numAirDashesTaken < currentProperties.numAirDashes)
         {
             if (!dashing)
             {
@@ -161,7 +168,7 @@ public class Player : MonoBehaviour {
                 // Cancel the current dash.
                 DashCancel();
 
-                // Start up a new dash.
+                // Start up a new dash, after a small cancel time.
                 Invoke("Dash", currentProperties.dashFrameTime);
             }
 
@@ -227,12 +234,21 @@ public class Player : MonoBehaviour {
         if (dashStart)
         {
             dashStart = false;
-            velocity.y = 0;
 
-            if (Mathf.Abs(velocity.x) < currentProperties.dashSpeed || Mathf.Sign(velocity.x) != Mathf.Sign(directionalInput.x))
+            if(currentProperties.canVerticalDash && directionalInput.x == 0)
             {
-                velocity.x = directionalInput.x * currentProperties.dashSpeed;
-                return;
+                velocity.y = directionalInput.y * currentProperties.dashSpeed;
+                velocity.x = 0;
+            }
+            else
+            {
+                velocity.y = 0;
+
+                if (Mathf.Abs(velocity.x) < currentProperties.dashSpeed || Mathf.Sign(velocity.x) != Mathf.Sign(directionalInput.x))
+                {
+                    velocity.x = directionalInput.x * currentProperties.dashSpeed;
+                    return;
+                }
             }
         }
 
@@ -288,6 +304,7 @@ public class Player : MonoBehaviour {
 
         [Header("Dashing")]
         public bool canDash;
+        public bool canVerticalDash;
         public int numAirDashes;
         public float dashTime;
         public float dashSpeed;
