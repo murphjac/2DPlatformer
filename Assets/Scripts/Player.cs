@@ -233,9 +233,24 @@ public class Player : MonoBehaviour {
             }
         }
 
-        float accelerationTime = PlayerOnGround() ? currentProperties.gndAccelTime : currentProperties.airAccelTime;
         float targetVelocityX = directionalInput.x * currentProperties.moveSpeed;
-        velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, accelerationTime);
+
+        // Only change velocity under one of the following conditions. Allows a jumping player to maintain a higher momentum if desired.
+        if( PlayerOnGround() || 
+            wallSliding || 
+            Mathf.Abs(targetVelocityX) > Mathf.Abs(velocity.x) || 
+            (Mathf.Sign(directionalInput.x) != Mathf.Sign(velocity.x) && directionalInput.x != 0)
+            )
+        {
+            float accelerationTime = PlayerOnGround() ? currentProperties.gndAccelTime : currentProperties.airAccelTime;
+            velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, accelerationTime);
+        }
+
+        // Stop horizontal velocity if the player runs into a wall.
+        if(Mathf.Sign(velocity.x) == -1 && controller.collisions.left || Mathf.Sign(velocity.x) == 1 && controller.collisions.right)
+        {
+            velocity.x = 0;
+        }
     }
 
     // Debug stuff
