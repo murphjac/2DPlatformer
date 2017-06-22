@@ -71,7 +71,7 @@ public class Player : MonoBehaviour {
         maxJumpVelocity = Mathf.Abs(gravity) * currentProperties.timeToJumpApex;
         minJumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(gravity) * currentProperties.minJumpHeight);
 
-        currentProperties.moveSpeed = dashing ? currentProperties.dashSpeed : currentProperties.moveSpeed;
+        currentProperties.moveSpeed = dashing ? currentProperties.dashSpeed : currentProperties.runSpeed;
     }
 
     public void Transform()
