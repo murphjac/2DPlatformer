@@ -230,8 +230,20 @@ public class Player : MonoBehaviour {
     // Debug stuff
     void OnDrawGizmos()
     {
-        Gizmos.color = dashing ? new Color(0, 1, 0, 0.7f) : new Color(0, 0, 1, 0.7f);
-        Gizmos.DrawCube(transform.position, new Vector3(0.3f, 0.3f, 0.3f));
+        if (Application.isPlaying)
+        {
+            float gizmoSize = 0.4f;
+            Vector3 cubePos = transform.position + new Vector3(gizmoSize, 1.0f, 0f);
+            Vector3 spherePos = transform.position + new Vector3(0.0f, 1.0f, 0.0f);
+
+            // Blue cube above player if dash, green if not.
+            Gizmos.color = dashing ? new Color(0, 1, 0, 1.0f) : new Color(0, 0, 1, 1.0f);
+            Gizmos.DrawCube(cubePos, new Vector3(gizmoSize, gizmoSize, gizmoSize));
+
+            // White sphere above player if on ground, black if not.
+            Gizmos.color = PlayerOnGround() ? new Color(1, 1, 1, 1.0f) : new Color(0, 0, 0, 1.0f);
+            Gizmos.DrawSphere(spherePos, gizmoSize/2);
+        }
     }
 
     [System.Serializable]
