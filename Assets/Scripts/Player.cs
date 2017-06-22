@@ -10,7 +10,6 @@ public class Player : MonoBehaviour {
     public MovementProperties inertiaProperties;
 
     private MovementProperties currentProperties;
-    private float dashSpeedMultiplier = 3.0f;
     private float timeToWallUnstick;
     private float gravity;
     private float maxJumpVelocity;
@@ -66,6 +65,8 @@ public class Player : MonoBehaviour {
         gravity = -(2 * currentProperties.maxJumpHeight) / Mathf.Pow(currentProperties.timeToJumpApex, 2);
         maxJumpVelocity = Mathf.Abs(gravity) * currentProperties.timeToJumpApex;
         minJumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(gravity) * currentProperties.minJumpHeight);
+
+        currentProperties.moveSpeed = dashing ? currentProperties.dashSpeed : currentProperties.moveSpeed;
     }
 
     public void Transform()
@@ -165,7 +166,7 @@ public class Player : MonoBehaviour {
         {
             dashStart = true;
             dashing = true;
-            currentProperties.moveSpeed *= currentProperties.dashSpeed;
+            currentProperties.moveSpeed = currentProperties.dashSpeed;
         }
     }
 
@@ -175,7 +176,7 @@ public class Player : MonoBehaviour {
         if (dashing)
         {
             dashing = false;
-            currentProperties.moveSpeed /= currentProperties.dashSpeed;
+            currentProperties.moveSpeed = currentProperties.runSpeed;
         }
     }
 
@@ -214,10 +215,9 @@ public class Player : MonoBehaviour {
             dashStart = false;
             velocity.y = 0;
 
-            float minDashSpeed = directionalInput.x * currentProperties.dashSpeed * dashSpeedMultiplier;
-            if (Mathf.Abs(velocity.x) < Mathf.Abs(minDashSpeed) || Mathf.Sign(velocity.x) != Mathf.Sign(directionalInput.x))
+            if (Mathf.Abs(velocity.x) < currentProperties.dashSpeed || Mathf.Sign(velocity.x) != Mathf.Sign(directionalInput.x))
             {
-                velocity.x = minDashSpeed;
+                velocity.x = directionalInput.x * currentProperties.dashSpeed;
                 return;
             }
         }
@@ -237,8 +237,11 @@ public class Player : MonoBehaviour {
     [System.Serializable]
     public struct MovementProperties
     {
-        [Header("Movement")]
+        [HideInInspector]
         public float moveSpeed;
+
+        [Header("Movement")]
+        public float runSpeed;
         public float airAccelTime;
         public float gndAccelTime;
 
