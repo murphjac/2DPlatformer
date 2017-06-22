@@ -21,6 +21,7 @@ public class Player : MonoBehaviour {
     private Vector2 directionalInput;
     private int wallDirX;
     private int numJumpsRemaining;
+    private int numAirDashesRemaining;
     private bool wallSliding;
     private bool dashing;
     private bool dashStart = false;
@@ -54,8 +55,12 @@ public class Player : MonoBehaviour {
             else { velocity.y = 0; }
         }
 
-        // Reset the number of jumps remaining upon gaining traction on a surface.
-        if (PlayerOnGround() || wallSliding) { numJumpsRemaining = currentProperties.numJumps; }
+        // Reset the number of jumps and airdashes remaining upon gaining traction on a surface.
+        if (PlayerOnGround() || wallSliding)
+        {
+            numJumpsRemaining = currentProperties.numJumps;
+            numAirDashesRemaining = currentProperties.numAirDashes;
+        }
     }
 
     void UpdatePlayerProperties(MovementProperties mp)
@@ -137,26 +142,29 @@ public class Player : MonoBehaviour {
 
     public void OnDashInputDown()
     {
-        if (!dashing)
+        if( (currentProperties.canDash && PlayerOnGround()) || (!PlayerOnGround() && numAirDashesRemaining > 0) )
         {
-            // Start a new dash.
-            Dash();
+            if (!dashing)
+            {
+                // Start a new dash.
+                Dash();
+            }
+            else
+            {
+                // Cancel any invoked dash methods.
+                CancelInvoke("Dash");
+                CancelInvoke("DashCancel");
+
+                // Cancel the current dash.
+                DashCancel();
+
+                // Start up a new dash.
+                Invoke("Dash", currentProperties.dashFrameTime);
+            }
+
+            // Plan on ending this dash.
+            Invoke("DashCancel", currentProperties.dashTime);
         }
-        else
-        {
-            // Cancel any invoked dash methods.
-            CancelInvoke("Dash");
-            CancelInvoke("DashCancel");
-
-            // Cancel the current dash.
-            DashCancel();
-
-            // Start up a new dash.
-            Invoke("Dash", currentProperties.dashFrameTime);
-        }
-
-        // Plan on ending this dash.
-        Invoke("DashCancel", currentProperties.dashTime);
     }
 
     // Begin a new dash.
@@ -167,6 +175,9 @@ public class Player : MonoBehaviour {
             dashStart = true;
             dashing = true;
             currentProperties.moveSpeed = currentProperties.dashSpeed;
+
+            // Subtract an airdash if used.
+            if (!PlayerOnGround()) { numAirDashesRemaining--; }
         }
     }
 
@@ -257,6 +268,9 @@ public class Player : MonoBehaviour {
         public float airAccelTime;
         public float gndAccelTime;
 
+        [Header("Dashing")]
+        public bool canDash;
+        public int numAirDashes;
         public float dashTime;
         public float dashSpeed;
         public float dashFrameTime;
