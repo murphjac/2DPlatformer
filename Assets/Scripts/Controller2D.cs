@@ -50,19 +50,19 @@ public class Controller2D : RaycastController {
             Vector2 rayOrigin = new Vector2(transform.position.x, raycastOrigins.botLeft.y);
             rayOrigin += Vector2.up * (horizontalRaySpacing * i);
 
-            // Fire right.
-            RaycastHit2D hitR = Physics2D.Raycast(rayOrigin, Vector2.right, interactionRange, usableObjectMask);
-            if(hitR && hitR.collider.tag == "Usable")
+            // Fire forward.
+            RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * collisions.faceDir, interactionRange, usableObjectMask);
+            if(hit)
             {
-                hitR.collider.gameObject.GetComponent<UsableObject>().Use();
+                hit.collider.gameObject.GetComponent<UsableObject>().Use();
                 return true;
             }
 
-            // Fire left.
-            RaycastHit2D hitL = Physics2D.Raycast(rayOrigin, Vector2.left, interactionRange, usableObjectMask);
-            if (hitL && hitL.collider.tag == "Usable")
+            // Fire backward.
+            hit = Physics2D.Raycast(rayOrigin, Vector2.right * -collisions.faceDir, interactionRange, usableObjectMask);
+            if (hit)
             {
-                hitL.collider.gameObject.GetComponent<UsableObject>().Use();
+                hit.collider.gameObject.GetComponent<UsableObject>().Use();
                 return true;
             }
         }
