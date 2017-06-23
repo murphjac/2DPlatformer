@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(Player))]
 public class PlayerInput : MonoBehaviour {
 
-    public KeyCode Jump, Dash, TransformEarth, TransformWind, TransformFire, TransformWater;
+    public KeyCode Jump, Dash, TransformEarth, TransformWind, TransformFire, TransformWater, Use;
 
     private Player player;
 
@@ -24,6 +24,7 @@ public class PlayerInput : MonoBehaviour {
         if (Input.GetKeyDown(TransformWind)) { player.Transform(Player.WIND); }
         if (Input.GetKeyDown(TransformFire)) { player.Transform(Player.FIRE); }
         if (Input.GetKeyDown(TransformWater)) { player.Transform(Player.WATER); }
+        if (Input.GetKeyDown(Use)) { player.TryUse(); }
     }
 
 }

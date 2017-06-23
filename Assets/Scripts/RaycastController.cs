@@ -9,6 +9,7 @@ public class RaycastController : MonoBehaviour {
     private const float dstBetweenRays = 0.25f;
 
     public LayerMask collisionMask;
+    public LayerMask usableObjectMask;
 
     [HideInInspector]
     public int horizontalRayCount = 4;

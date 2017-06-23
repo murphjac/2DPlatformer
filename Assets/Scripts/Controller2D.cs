@@ -5,6 +5,7 @@ using UnityEngine;
 public class Controller2D : RaycastController {
     const int LEFT = -1, RIGHT = 1, UP = 1, DOWN = -1;
 
+    public float interactionRange;
     public float maxSlopeAngle = 80;
     public CollisionInfo collisions;
 
@@ -39,6 +40,34 @@ public class Controller2D : RaycastController {
         transform.Translate(moveAmount);
 
         if (standingOnPlatform){ collisions.below = true; }
+    }
+
+    public bool Interact()
+    {
+        // Fire a series of horizontal raycasts out from the center of the character, looking for interactables.
+        for(int i = 0; i < horizontalRayCount; i++)
+        {
+            Vector2 rayOrigin = new Vector2(transform.position.x, raycastOrigins.botLeft.y);
+            rayOrigin += Vector2.up * (horizontalRaySpacing * i);
+
+            // Fire right.
+            RaycastHit2D hitR = Physics2D.Raycast(rayOrigin, Vector2.right, interactionRange, usableObjectMask);
+            if(hitR && hitR.collider.tag == "Usable")
+            {
+                hitR.collider.gameObject.GetComponent<UsableObject>().Use();
+                return true;
+            }
+
+            // Fire left.
+            RaycastHit2D hitL = Physics2D.Raycast(rayOrigin, Vector2.left, interactionRange, usableObjectMask);
+            if (hitL && hitL.collider.tag == "Usable")
+            {
+                hitL.collider.gameObject.GetComponent<UsableObject>().Use();
+                return true;
+            }
+        }
+
+        return false;
     }
 
     void HorizontalCollisions(ref Vector2 moveAmount)

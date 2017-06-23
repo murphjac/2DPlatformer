@@ -104,6 +104,11 @@ public class Player : MonoBehaviour {
         }
     }
 
+    public void TryUse()
+    {
+        print(controller.Interact() ? "interacted!" : "not interacted!");
+    }
+
     public void OnJumpInputDown()
     {
         // Cancel any dashes upon jumping during a dash.
@@ -302,6 +307,11 @@ public class Player : MonoBehaviour {
             // White sphere above player if on ground, black if not.
             Gizmos.color = PlayerOnGround() ? new Color(1, 1, 1, 1.0f) : new Color(0, 0, 0, 1.0f);
             Gizmos.DrawSphere(spherePos, gizmoSize/2);
+
+            // Pale yellow indicates interaction range.
+            Gizmos.color = new Color(1f, 1f, 0f, 1f);
+            Vector3 cubeDimensions = new Vector3(2 * controller.interactionRange, transform.localScale.y, 0);
+            Gizmos.DrawWireCube(transform.position, cubeDimensions);
         }
     }
 
