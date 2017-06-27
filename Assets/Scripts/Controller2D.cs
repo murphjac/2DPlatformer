@@ -140,6 +140,7 @@ public class Controller2D : RaycastController {
     {
         float directionY = Mathf.Sign(moveAmount.y);
         float rayLength = Mathf.Abs(moveAmount.y) + skinWidth;
+        int breakableHitCount = 0;
 
         // Check for collisions with vertical raycasts.
         for (int i = 0; i < verticalRayCount; i++)
@@ -160,6 +161,14 @@ public class Controller2D : RaycastController {
                     
                     // If holding 'down' on a fall-through platform, the next jump is staged to fall through instead.
                     collisions.readyToFallThroughPlatform = (playerInput.y == DOWN);
+                }
+
+                // Hit a breakable object.
+                if(hit.collider.tag == "Breakable")
+                {
+                    // Destroy a breakable object only if the player is only colliding with breakable objects.
+                    if (++breakableHitCount == verticalRayCount) { Destroy(hit.collider.gameObject); }
+                    continue;
                 }
 
                 rayLength = hit.distance;
