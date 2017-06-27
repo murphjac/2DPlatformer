@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Renderer))]
-public class DoorButton : UsableObject {
+public class DoorButton : MonoBehaviour, UsableObject {
     const int OPEN = 0, OPENING = 1, CLOSING = 2, CLOSED = 3;
 
     public Transform door;
@@ -63,7 +63,7 @@ public class DoorButton : UsableObject {
         }
     }
 
-    public override void Use()
+    public void Use()
     {
         if (status == OPEN || status == OPENING)
         {

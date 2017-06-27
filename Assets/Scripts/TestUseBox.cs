@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [RequireComponent(typeof(Renderer))]
-public class TestUseBox : UsableObject {
+public class TestUseBox : MonoBehaviour, UsableObject {
 
     private Renderer rend;
     private bool useState = false;
@@ -10,7 +10,7 @@ public class TestUseBox : UsableObject {
         rend = GetComponent<Renderer>();
     }
 
-    public override void Use()
+    public void Use()
     {
         string materialFile = useState ? "Materials/Player_Momentum" : "Materials/Player_Inertia";
         rend.sharedMaterial = Resources.Load(materialFile) as Material;
