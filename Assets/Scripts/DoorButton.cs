@@ -30,12 +30,14 @@ public class DoorButton : UsableObject {
             status = OPEN;
             percentOpen = 1.0f;
             rend.sharedMaterial = Resources.Load("Materials/Player_Wind") as Material;
+            door.Translate(doorOpenPointLocal);
         }
         else
         {
             status = CLOSED;
             percentOpen = 0.0f;
             rend.sharedMaterial = Resources.Load("Materials/Player_Fire") as Material;
+            door.Translate(doorClosedPointLocal);
         }
     }
 
