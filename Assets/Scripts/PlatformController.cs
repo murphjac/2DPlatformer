@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlatformController : RaycastController {
 
+    public bool active;
     public LayerMask passengerMask;
     public Vector3[] localWaypoints;
     public float speed;
@@ -31,15 +32,18 @@ public class PlatformController : RaycastController {
     }
 
     void Update () {
-        UpdateRaycastOrigins();
+        if (active)
+        {
+            UpdateRaycastOrigins();
 
-        Vector3 velocity = CalculatePlatformMovement();
+            Vector3 velocity = CalculatePlatformMovement();
 
-        CalculatePassengerMovement(velocity);
+            CalculatePassengerMovement(velocity);
 
-        MovePassengers(true);
-        transform.Translate(velocity);
-        MovePassengers(false);
+            MovePassengers(true);
+            transform.Translate(velocity);
+            MovePassengers(false);
+        }
     }
 
     float Ease(float x)
